@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pygofem"
+version = "2023.11.0"
+description = "Python front-end for GoFEM (fork for deal.II 9.3 and mtpy 1.x)"
+readme = "README.md"
+requires-python = ">=3.8"
+license = { file = "LICENSE" }
+# deal.II's Python bindings (PyDealII) are not pip-installable: install the
+# conda-forge `dealii` package alongside this one.
+dependencies = ["numpy", "matplotlib", "shapely", "pandas"]
+
+[project.optional-dependencies]
+# Only gofem.mtpy_utils needs mtpy.
+mtpy = ["mtpy==1.1.5"]
+
+[project.urls]
+Upstream = "https://github.com/GoFEM/pyGoFEM"
+
+[tool.setuptools.packages.find]
+include = ["gofem*"]

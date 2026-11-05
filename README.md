@@ -1,3 +1,10 @@
+> **This is a modified fork, not the official pyGoFEM.** This branch stays on the
+> 2023 code, which works with **deal.II 9.3** and **mtpy 1.x**, for GoFEM
+> installations that can't read models built with newer deal.II. It also adds
+> rounded polygon refinement and pip packaging; see
+> [MODIFICATIONS.md](MODIFICATIONS.md). For current development, use
+> [GoFEM/pyGoFEM](https://github.com/GoFEM/pyGoFEM).
+
 # Motivation
 
 Python front-end for the **GoFEM** package. 
