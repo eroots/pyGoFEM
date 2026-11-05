@@ -53,7 +53,7 @@ def is_within_ellipsoid(point, center, radii, pnorm = 2):
     
     assert len(point) == len(center) == len(radii)
     
-    assert pnorm in [1, 2]
+    # assert pnorm in [1, 2]
     
     dim = len(point)
     
@@ -292,7 +292,7 @@ def points_in_polygon(points_xy, polygon, quadrat_width):
     return points_within
 
 
-def refine_within_polygon(triangulation, polygon, repeat = 1, z_range = [float('-inf'), float('inf')], n_quadrats = 10):
+def refine_within_polygon(triangulation, polygon, repeat = 1, z_range = [float('-inf'), float('inf')], n_quadrats = 10, pnorm=1):
     '''
         Refine cells for which refine_callback gives true
     '''
@@ -302,21 +302,42 @@ def refine_within_polygon(triangulation, polygon, repeat = 1, z_range = [float('
     dim = triangulation.dim()
 
     qwidth = (polygon.bounds[dim-1] - polygon.bounds[0]) / n_quadrats
+
+    # Radius of the sphere that encloses the polygon (multiply by 1.05 to add a bit of a buffer)
+    radius = 0.5 * np.sqrt((polygon.bounds[0]-polygon.bounds[2])**2 + (polygon.bounds[1]-polygon.bounds[3])**2) * 1.05
+    # radius_x = polygon.bounds[0] -
+    radii = [radius, radius,  z_range[1]]
     
+    if pnorm > 1:
+        print('Experimental rounded polygon with radius: {}'.format(radii))
+
     for i in range(repeat):
         
         xc = []
         yc = []
         idx = 0
         cell_indices = dict()
+        centroid = [polygon.centroid.x, polygon.centroid.y, z_range[0]]
         for cell in triangulation.active_cells():    
             center = cell.center().to_list()
             
-            if center[2] > z_range[0] and center[2] < z_range[1]:
-                xc.append(center[0])
-                yc.append(center[1])
-                cell_indices[(cell.level(), cell.index())] = idx
-                idx += 1
+            if pnorm == 1:
+                if center[2] > z_range[0] and center[2] < z_range[1]:
+                    xc.append(center[0])
+                    yc.append(center[1])
+                    cell_indices[(cell.level(), cell.index())] = idx
+                    idx += 1
+            elif pnorm > 1:
+                # To approximate a rounded bottom polygon, just check if the point falls within a hemisphere which encloses the polygon
+                # dist = 0
+                # for d in range(3):
+                #     dist += (abs(center[d] - centroid[d]) / radii[d])**pnorm
+                if is_within_ellipsoid(center, centroid, radii, pnorm=pnorm):
+                # if dist <= 1.:
+                    xc.append(center[0])
+                    yc.append(center[1])
+                    cell_indices[(cell.level(), cell.index())] = idx
+                    idx += 1
                 
         if(len(yc) == 0):
             continue
